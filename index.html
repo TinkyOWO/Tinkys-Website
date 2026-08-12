@@ -326,7 +326,7 @@
       fireConfetti(prize.color);
     }
 
-    // ===== Bounce Sound (Web Audio API) =====
+    // ===== Bounce Sound =====
     let audioCtx = null;
 
     function playBounceSound() {
@@ -340,7 +340,6 @@
       oscillator.connect(gainNode);
       gainNode.connect(audioCtx.destination);
 
-      // Soft cute "boing"
       oscillator.type = 'sine';
       oscillator.frequency.setValueAtTime(280, audioCtx.currentTime);
       oscillator.frequency.exponentialRampToValueAtTime(140, audioCtx.currentTime + 0.12);
@@ -384,12 +383,16 @@
 
       cat.addEventListener('click', () => {
         if (catData.bouncing) return;
+
+        // Change color instantly
+        nextColor();
+
+        // Still play the bounce animation
         catData.bouncing = true;
         cat.classList.add('bounce');
         setTimeout(() => {
           cat.classList.remove('bounce');
           catData.bouncing = false;
-          nextColor();
         }, 500);
       });
 
