@@ -4,6 +4,21 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Tinky - Indie Game Developer</title>
+
+  <!-- Discord / Open Graph Embed -->
+  <meta property="og:title" content="Tinky - Indie Game Developer">
+  <meta property="og:description" content="Solo indie game developer. Come check out my games!">
+  <meta property="og:image" content="https://tinkyowo.github.io/Tinkys-Website/TinkyNewStyleTransparent.png">
+  <meta property="og:url" content="https://tinkyowo.github.io/Tinkys-Website/">
+  <meta property="og:type" content="website">
+  <meta name="theme-color" content="#ff4d6d">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Tinky - Indie Game Developer">
+  <meta name="twitter:description" content="Solo indie game developer. Come check out my games!">
+  <meta name="twitter:image" content="https://tinkyowo.github.io/Tinkys-Website/TinkyNewStyleTransparent.png">
+
   <style>
     :root {
       --accent: #ff4d6d;
@@ -143,7 +158,6 @@
       text-decoration: none;
       transition: color 0.3s ease;
     }
-
     /* Floating cats */
     .floating-cat {
       position: fixed;
@@ -165,7 +179,6 @@
       70% { transform: scale(1.15) rotate(-3deg); }
       100% { transform: scale(1) rotate(0); }
     }
-
     /* Spawn controls */
     #spawn-controls {
       position: fixed;
@@ -200,7 +213,6 @@
       background: var(--accent);
       transform: scale(1.4);
     }
-
     @media (max-width: 700px) {
       h1 { font-size: 2.5rem; }
       .header-cat { width: 110px; }
@@ -213,7 +225,6 @@
     <div id="cat-counter">1</div>
     <div id="spawn-dot" title="Spawn another cat"></div>
   </div>
-
   <div class="container">
     <header>
       <img src="TinkyNewStyleTransparent.png" alt="Tinky" class="header-cat">
@@ -227,7 +238,6 @@
         View on Steam →
       </a>
     </header>
-
     <section>
       <h2>My Games</h2>
       <div class="games">
@@ -242,7 +252,6 @@
         </div>
       </div>
     </section>
-
     <section class="socials-section">
       <h2>Find and join me here</h2>
       <div class="socials">
@@ -252,34 +261,28 @@
         <a href="#" onclick="checkAge(event)">Twitter (NSFW)</a>
       </div>
     </section>
-
     <footer>
       Made by Tinky.
       <a href="https://store.steampowered.com/developer/tinky" target="_blank">Steam Developer Page</a>
     </footer>
   </div>
-
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
-
   <script>
     function checkAge(e) {
       e.preventDefault();
       const isAdult = confirm("This link leads to my NSFW Twitter.\n\nAre you 18 years or older?");
       if (isAdult) window.open("https://x.com/TinkyNSFW", "_blank");
     }
-
     // ===== Color Themes =====
     const prizes = [
-      { name: "Sky Blue",     color: "#3b82f6", light: "#60a5fa", dark: "#2563eb" },
-      { name: "Purple Guy",   color: "#a855f7", light: "#c084fc", dark: "#9333ea" },
-      { name: "Oi Orange",    color: "#f97316", light: "#fb923c", dark: "#ea580c" },
-      { name: "Cya Cyan",     color: "#06b6d4", light: "#22d3ee", dark: "#0891b2" },
-      { name: "Rose Roses",   color: "#f43f5e", light: "#fb7185", dark: "#e11d48" },
-      { name: "Slimey Lime",  color: "#84cc16", light: "#a3e635", dark: "#65a30d" }
+      { name: "Sky Blue", color: "#3b82f6", light: "#60a5fa", dark: "#2563eb" },
+      { name: "Purple Guy", color: "#a855f7", light: "#c084fc", dark: "#9333ea" },
+      { name: "Oi Orange", color: "#f97316", light: "#fb923c", dark: "#ea580c" },
+      { name: "Cya Cyan", color: "#06b6d4", light: "#22d3ee", dark: "#0891b2" },
+      { name: "Rose Roses", color: "#f43f5e", light: "#fb7185", dark: "#e11d48" },
+      { name: "Slimey Lime", color: "#84cc16", light: "#a3e635", dark: "#65a30d" }
     ];
-
     let currentIndex = 0;
-
     function applyTheme(prize) {
       document.documentElement.style.setProperty('--accent', prize.color);
       document.documentElement.style.setProperty('--accent-light', prize.light);
@@ -288,7 +291,6 @@
       document.documentElement.style.setProperty('--bg-tint', tint);
       localStorage.setItem('tinky-theme', JSON.stringify(prize));
     }
-
     function loadSavedTheme() {
       const saved = localStorage.getItem('tinky-theme');
       if (saved) {
@@ -301,7 +303,6 @@
       }
     }
     loadSavedTheme();
-
     function fireConfetti(color) {
       confetti({
         particleCount: 100,
@@ -326,57 +327,44 @@
         });
       }, 150);
     }
-
     function nextColor() {
       currentIndex = (currentIndex + 1) % prizes.length;
       const prize = prizes[currentIndex];
       applyTheme(prize);
       fireConfetti(prize.color);
     }
-
     // ===== Bounce Sound =====
     let audioCtx = null;
-
     function playBounceSound() {
       if (!audioCtx) {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       }
-
       const oscillator = audioCtx.createOscillator();
       const gainNode = audioCtx.createGain();
-
       oscillator.connect(gainNode);
       gainNode.connect(audioCtx.destination);
-
       oscillator.type = 'sine';
       oscillator.frequency.setValueAtTime(280, audioCtx.currentTime);
       oscillator.frequency.exponentialRampToValueAtTime(140, audioCtx.currentTime + 0.12);
-
       gainNode.gain.setValueAtTime(0.18, audioCtx.currentTime);
       gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.15);
-
       oscillator.start(audioCtx.currentTime);
       oscillator.stop(audioCtx.currentTime + 0.15);
     }
-
     // ===== Multiple Cats =====
     const cats = [];
     const counterEl = document.getElementById('cat-counter');
-
     function updateCounter() {
       counterEl.textContent = cats.length;
     }
-
     function createCat() {
       const cat = document.createElement('img');
       cat.src = 'TinkyAdmire.png';
       cat.alt = 'Tinky';
       cat.draggable = false;
       cat.className = 'floating-cat';
-
       const startX = Math.random() * (window.innerWidth - 100);
       const startY = Math.random() * (window.innerHeight - 100);
-
       const catData = {
         el: cat,
         x: startX,
@@ -385,15 +373,11 @@
         dy: (Math.random() * 1.5 + 1.5) * (Math.random() < 0.5 ? 1 : -1),
         bouncing: false
       };
-
       cat.style.left = catData.x + 'px';
       cat.style.top = catData.y + 'px';
-
       cat.addEventListener('click', () => {
         if (catData.bouncing) return;
-
         nextColor();
-
         catData.bouncing = true;
         cat.classList.add('bounce');
         setTimeout(() => {
@@ -401,26 +385,19 @@
           catData.bouncing = false;
         }, 500);
       });
-
       document.body.appendChild(cat);
       cats.push(catData);
       updateCounter();
     }
-
     createCat();
-
     function moveCats() {
       cats.forEach(cat => {
         if (cat.bouncing) return;
-
         const maxX = window.innerWidth - cat.el.offsetWidth;
         const maxY = window.innerHeight - cat.el.offsetHeight;
-
         cat.x += cat.dx;
         cat.y += cat.dy;
-
         let bounced = false;
-
         if (cat.x <= 0 || cat.x >= maxX) {
           cat.dx = -cat.dx;
           bounced = true;
@@ -429,23 +406,18 @@
           cat.dy = -cat.dy;
           bounced = true;
         }
-
         if (bounced) {
           playBounceSound();
         }
-
         cat.x = Math.max(0, Math.min(cat.x, maxX));
         cat.y = Math.max(0, Math.min(cat.y, maxY));
-
         cat.el.style.left = cat.x + 'px';
         cat.el.style.top = cat.y + 'px';
       });
       requestAnimationFrame(moveCats);
     }
     moveCats();
-
     document.getElementById('spawn-dot').addEventListener('click', createCat);
-
     window.addEventListener('resize', () => {
       cats.forEach(cat => {
         cat.x = Math.min(cat.x, window.innerWidth - cat.el.offsetWidth);
