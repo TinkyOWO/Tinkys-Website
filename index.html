@@ -137,8 +137,9 @@
       text-decoration: none;
       transition: color 0.3s ease;
     }
-    /* Floating cat */
-    #floating-cat {
+
+    /* Floating cats */
+    .floating-cat {
       position: fixed;
       width: 90px;
       height: auto;
@@ -148,7 +149,7 @@
       transition: transform 0.15s ease;
       filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4));
     }
-    #floating-cat.bounce {
+    .floating-cat.bounce {
       animation: bounce 0.5s ease;
     }
     @keyframes bounce {
@@ -158,6 +159,27 @@
       70% { transform: scale(1.15) rotate(-3deg); }
       100% { transform: scale(1) rotate(0); }
     }
+
+    /* Secret spawn dot */
+    #spawn-dot {
+      position: fixed;
+      bottom: 18px;
+      left: 18px;
+      width: 11px;
+      height: 11px;
+      background: #333;
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 10001;
+      opacity: 0.45;
+      transition: all 0.25s ease;
+    }
+    #spawn-dot:hover {
+      opacity: 0.9;
+      background: var(--accent);
+      transform: scale(1.4);
+    }
+
     /* Prize Wheel */
     #wheel-overlay {
       position: fixed;
@@ -200,9 +222,10 @@
       z-index: 10;
       filter: drop-shadow(0 3px 4px rgba(0,0,0,0.5));
     }
+
     @media (max-width: 700px) {
       h1 { font-size: 2.5rem; }
-      #floating-cat { width: 70px; }
+      .floating-cat { width: 70px; }
       #wheel-container, #wheel {
         width: 280px;
         height: 280px;
@@ -211,7 +234,8 @@
   </style>
 </head>
 <body>
-  <img id="floating-cat" src="TinkyAdmire.png" alt="Tinky" draggable="false">
+  <!-- Original cat will be created by JS -->
+  <div id="spawn-dot" title="..."></div>
 
   <!-- Prize Wheel -->
   <div id="wheel-overlay">
@@ -289,7 +313,6 @@
     const overlay = document.getElementById('wheel-overlay');
     const segmentAngle = 360 / prizes.length;
 
-    // Build clean colored wheel (no text)
     function buildWheel() {
       const startOffset = -segmentAngle / 2;
       let gradientParts = [];
@@ -300,7 +323,6 @@
       });
       wheel.style.background = `conic-gradient(${gradientParts.join(', ')})`;
     }
-
     buildWheel();
 
     let isSpinning = false;
@@ -309,40 +331,28 @@
       document.documentElement.style.setProperty('--accent', prize.color);
       document.documentElement.style.setProperty('--accent-light', prize.light);
       document.documentElement.style.setProperty('--accent-dark', prize.dark);
-
-      // Soft background tint
       const tint = `color-mix(in srgb, ${prize.color} 18%, #0d0d0d)`;
       document.documentElement.style.setProperty('--bg-tint', tint);
-
-      // Save to localStorage
       localStorage.setItem('tinky-theme', JSON.stringify(prize));
     }
 
-    // Load saved theme on page load
     function loadSavedTheme() {
       const saved = localStorage.getItem('tinky-theme');
       if (saved) {
         try {
-          const prize = JSON.parse(saved);
-          applyTheme(prize);
-        } catch (e) {
-          // ignore invalid data
-        }
+          applyTheme(JSON.parse(saved));
+        } catch (e) {}
       }
     }
-
     loadSavedTheme();
 
     function fireConfetti(color) {
-      // Main burst
       confetti({
         particleCount: 120,
         spread: 80,
         origin: { y: 0.6 },
         colors: [color, '#ffffff', '#f0f0f0']
       });
-
-      // Extra side bursts for more fun
       setTimeout(() => {
         confetti({
           particleCount: 60,
@@ -364,80 +374,112 @@
     function spinWheel() {
       if (isSpinning) return;
       isSpinning = true;
-
       overlay.style.display = 'flex';
 
       const extraSpins = 6 + Math.random() * 3;
       const randomDegree = Math.random() * 360;
       const totalDegree = extraSpins * 360 + randomDegree;
 
-      // Reset
       wheel.style.transition = 'none';
       wheel.style.transform = 'rotate(0deg)';
       void wheel.offsetWidth;
 
-      // Spin
       wheel.style.transition = 'transform 4.5s cubic-bezier(0.15, 0.8, 0.3, 1)';
       wheel.style.transform = `rotate(${totalDegree}deg)`;
 
       setTimeout(() => {
-        // Calculate which segment the arrow landed on
         const finalAngle = totalDegree % 360;
         const normalized = (360 - finalAngle + segmentAngle / 2) % 360;
         const index = Math.floor(normalized / segmentAngle) % prizes.length;
-
         const won = prizes[index];
 
-        // Apply theme + save + confetti + close
         applyTheme(won);
         fireConfetti(won.color);
 
         overlay.style.display = 'none';
         isSpinning = false;
-        bouncing = false;
       }, 4700);
     }
 
-    // ===== Floating Cat =====
-    const cat = document.getElementById('floating-cat');
-    let x = 100, y = 100, dx = 2.8, dy = 2.2;
-    let bouncing = false;
+    // ===== Multiple Cats System =====
+    const cats = [];
 
-    function moveCat() {
-      if (!bouncing) {
-        const maxX = window.innerWidth - cat.offsetWidth;
-        const maxY = window.innerHeight - cat.offsetHeight;
-        x += dx;
-        y += dy;
-        if (x <= 0 || x >= maxX) dx = -dx;
-        if (y <= 0 || y >= maxY) dy = -dy;
-        x = Math.max(0, Math.min(x, maxX));
-        y = Math.max(0, Math.min(y, maxY));
-        cat.style.left = x + 'px';
-        cat.style.top = y + 'px';
-      }
-      requestAnimationFrame(moveCat);
+    function createCat() {
+      const cat = document.createElement('img');
+      cat.src = 'TinkyAdmire.png';
+      cat.alt = 'Tinky';
+      cat.draggable = false;
+      cat.className = 'floating-cat';
+
+      // Random starting position
+      const startX = Math.random() * (window.innerWidth - 100);
+      const startY = Math.random() * (window.innerHeight - 100);
+
+      const catData = {
+        el: cat,
+        x: startX,
+        y: startY,
+        dx: (Math.random() * 1.8 + 1.8) * (Math.random() < 0.5 ? 1 : -1),
+        dy: (Math.random() * 1.5 + 1.5) * (Math.random() < 0.5 ? 1 : -1),
+        bouncing: false
+      };
+
+      cat.style.left = catData.x + 'px';
+      cat.style.top = catData.y + 'px';
+
+      cat.addEventListener('click', () => {
+        if (catData.bouncing || isSpinning) return;
+        catData.bouncing = true;
+        cat.classList.add('bounce');
+        setTimeout(() => {
+          cat.classList.remove('bounce');
+          catData.bouncing = false;
+          spinWheel();
+        }, 500);
+      });
+
+      document.body.appendChild(cat);
+      cats.push(catData);
+      return catData;
     }
 
-    cat.addEventListener('click', () => {
-      if (bouncing || isSpinning) return;
-      bouncing = true;
-      cat.classList.add('bounce');
-      setTimeout(() => {
-        cat.classList.remove('bounce');
-        spinWheel();
-      }, 500);
-    });
+    // Create the first cat
+    createCat();
 
-    window.addEventListener('load', () => {
-      x = Math.random() * (window.innerWidth - 100);
-      y = Math.random() * (window.innerHeight - 100);
-      moveCat();
+    // Animation loop for all cats
+    function moveCats() {
+      cats.forEach(cat => {
+        if (cat.bouncing) return;
+
+        const maxX = window.innerWidth - cat.el.offsetWidth;
+        const maxY = window.innerHeight - cat.el.offsetHeight;
+
+        cat.x += cat.dx;
+        cat.y += cat.dy;
+
+        if (cat.x <= 0 || cat.x >= maxX) cat.dx = -cat.dx;
+        if (cat.y <= 0 || cat.y >= maxY) cat.dy = -cat.dy;
+
+        cat.x = Math.max(0, Math.min(cat.x, maxX));
+        cat.y = Math.max(0, Math.min(cat.y, maxY));
+
+        cat.el.style.left = cat.x + 'px';
+        cat.el.style.top = cat.y + 'px';
+      });
+      requestAnimationFrame(moveCats);
+    }
+    moveCats();
+
+    // Spawn dot
+    document.getElementById('spawn-dot').addEventListener('click', () => {
+      createCat();
     });
 
     window.addEventListener('resize', () => {
-      x = Math.min(x, window.innerWidth - cat.offsetWidth);
-      y = Math.min(y, window.innerHeight - cat.offsetHeight);
+      cats.forEach(cat => {
+        cat.x = Math.min(cat.x, window.innerWidth - cat.el.offsetWidth);
+        cat.y = Math.min(cat.y, window.innerHeight - cat.el.offsetHeight);
+      });
     });
   </script>
 </body>
