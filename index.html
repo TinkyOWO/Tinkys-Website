@@ -281,14 +281,12 @@
       localStorage.setItem('tinky-theme', JSON.stringify(prize));
     }
 
-    // Load saved theme
     function loadSavedTheme() {
       const saved = localStorage.getItem('tinky-theme');
       if (saved) {
         try {
           const prize = JSON.parse(saved);
           applyTheme(prize);
-          // Find the index so cycling continues from the saved one
           const idx = prizes.findIndex(p => p.color === prize.color);
           if (idx !== -1) currentIndex = idx;
         } catch (e) {}
@@ -326,6 +324,32 @@
       const prize = prizes[currentIndex];
       applyTheme(prize);
       fireConfetti(prize.color);
+    }
+
+    // ===== Bounce Sound (Web Audio API) =====
+    let audioCtx = null;
+
+    function playBounceSound() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+
+      const oscillator = audioCtx.createOscillator();
+      const gainNode = audioCtx.createGain();
+
+      oscillator.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+
+      // Soft cute "boing"
+      oscillator.type = 'sine';
+      oscillator.frequency.setValueAtTime(280, audioCtx.currentTime);
+      oscillator.frequency.exponentialRampToValueAtTime(140, audioCtx.currentTime + 0.12);
+
+      gainNode.gain.setValueAtTime(0.18, audioCtx.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.15);
+
+      oscillator.start(audioCtx.currentTime);
+      oscillator.stop(audioCtx.currentTime + 0.15);
     }
 
     // ===== Multiple Cats =====
@@ -379,14 +403,31 @@
     function moveCats() {
       cats.forEach(cat => {
         if (cat.bouncing) return;
+
         const maxX = window.innerWidth - cat.el.offsetWidth;
         const maxY = window.innerHeight - cat.el.offsetHeight;
+
         cat.x += cat.dx;
         cat.y += cat.dy;
-        if (cat.x <= 0 || cat.x >= maxX) cat.dx = -cat.dx;
-        if (cat.y <= 0 || cat.y >= maxY) cat.dy = -cat.dy;
+
+        let bounced = false;
+
+        if (cat.x <= 0 || cat.x >= maxX) {
+          cat.dx = -cat.dx;
+          bounced = true;
+        }
+        if (cat.y <= 0 || cat.y >= maxY) {
+          cat.dy = -cat.dy;
+          bounced = true;
+        }
+
+        if (bounced) {
+          playBounceSound();
+        }
+
         cat.x = Math.max(0, Math.min(cat.x, maxX));
         cat.y = Math.max(0, Math.min(cat.y, maxY));
+
         cat.el.style.left = cat.x + 'px';
         cat.el.style.top = cat.y + 'px';
       });
