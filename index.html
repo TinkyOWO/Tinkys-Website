@@ -171,7 +171,6 @@
       gap: 6px;
       z-index: 10001;
     }
-
     #cat-counter {
       font-size: 12px;
       font-weight: 600;
@@ -180,9 +179,7 @@
       padding: 2px 7px;
       border-radius: 10px;
       user-select: none;
-      transition: color 0.3s ease;
     }
-
     #spawn-dot {
       width: 11px;
       height: 11px;
@@ -252,13 +249,11 @@
   </style>
 </head>
 <body>
-  <!-- Spawn controls -->
   <div id="spawn-controls">
     <div id="cat-counter">1</div>
     <div id="spawn-dot" title="Spawn another cat"></div>
   </div>
 
-  <!-- Prize Wheel -->
   <div id="wheel-overlay">
     <div id="wheel-container">
       <div id="wheel-pointer"></div>
@@ -310,7 +305,6 @@
     </footer>
   </div>
 
-  <!-- Confetti library -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 
   <script>
@@ -332,17 +326,18 @@
 
     const wheel = document.getElementById('wheel');
     const overlay = document.getElementById('wheel-overlay');
-    const segmentAngle = 360 / prizes.length;
+    const segmentAngle = 360 / prizes.length; // 60° exactly
 
+    // Perfect equal segments – first segment is centered under the pointer at 0°
     function buildWheel() {
-      const startOffset = -segmentAngle / 2;
-      let gradientParts = [];
+      let parts = [];
       prizes.forEach((prize, i) => {
-        const start = startOffset + i * segmentAngle;
-        const end   = startOffset + (i + 1) * segmentAngle;
-        gradientParts.push(`${prize.color} ${start}deg ${end}deg`);
+        const start = i * segmentAngle;
+        const end = (i + 1) * segmentAngle;
+        parts.push(`${prize.color} ${start}deg ${end}deg`);
       });
-      wheel.style.background = `conic-gradient(${gradientParts.join(', ')})`;
+      // Rotate the whole gradient so the middle of the first segment sits under the top pointer
+      wheel.style.background = `conic-gradient(from -${segmentAngle / 2}deg, ${parts.join(', ')})`;
     }
     buildWheel();
 
@@ -360,9 +355,7 @@
     function loadSavedTheme() {
       const saved = localStorage.getItem('tinky-theme');
       if (saved) {
-        try {
-          applyTheme(JSON.parse(saved));
-        } catch (e) {}
+        try { applyTheme(JSON.parse(saved)); } catch (e) {}
       }
     }
     loadSavedTheme();
@@ -375,20 +368,8 @@
         colors: [color, '#ffffff', '#f0f0f0']
       });
       setTimeout(() => {
-        confetti({
-          particleCount: 60,
-          angle: 60,
-          spread: 55,
-          origin: { x: 0 },
-          colors: [color, '#ffffff']
-        });
-        confetti({
-          particleCount: 60,
-          angle: 120,
-          spread: 55,
-          origin: { x: 1 },
-          colors: [color, '#ffffff']
-        });
+        confetti({ particleCount: 60, angle: 60, spread: 55, origin: { x: 0 }, colors: [color, '#ffffff'] });
+        confetti({ particleCount: 60, angle: 120, spread: 55, origin: { x: 1 }, colors: [color, '#ffffff'] });
       }, 200);
     }
 
@@ -401,19 +382,25 @@
       const randomDegree = Math.random() * 360;
       const totalDegree = extraSpins * 360 + randomDegree;
 
+      // Reset
       wheel.style.transition = 'none';
       wheel.style.transform = 'rotate(0deg)';
       void wheel.offsetWidth;
 
+      // Spin
       wheel.style.transition = 'transform 4.5s cubic-bezier(0.15, 0.8, 0.3, 1)';
       wheel.style.transform = `rotate(${totalDegree}deg)`;
 
       setTimeout(() => {
-        const finalAngle = totalDegree % 360;
-        const normalized = (360 - finalAngle + segmentAngle / 2) % 360;
-        const index = Math.floor(normalized / segmentAngle) % prizes.length;
-        const won = prizes[index];
+        // Correct landing calculation
+        // The wheel rotates clockwise. The angle now under the pointer is:
+        let deg = totalDegree % 360;
+        // Because we offset the gradient by -half segment, we add it back
+        deg = (deg + segmentAngle / 2) % 360;
+        // Convert to index (pointer is at top)
+        const index = Math.floor((360 - deg) / segmentAngle) % prizes.length;
 
+        const won = prizes[index];
         applyTheme(won);
         fireConfetti(won.color);
 
@@ -466,29 +453,21 @@
       document.body.appendChild(cat);
       cats.push(catData);
       updateCounter();
-      return catData;
     }
 
-    // Create the first cat
     createCat();
 
-    // Animation loop for all cats
     function moveCats() {
       cats.forEach(cat => {
         if (cat.bouncing) return;
-
         const maxX = window.innerWidth - cat.el.offsetWidth;
         const maxY = window.innerHeight - cat.el.offsetHeight;
-
         cat.x += cat.dx;
         cat.y += cat.dy;
-
         if (cat.x <= 0 || cat.x >= maxX) cat.dx = -cat.dx;
         if (cat.y <= 0 || cat.y >= maxY) cat.dy = -cat.dy;
-
         cat.x = Math.max(0, Math.min(cat.x, maxX));
         cat.y = Math.max(0, Math.min(cat.y, maxY));
-
         cat.el.style.left = cat.x + 'px';
         cat.el.style.top = cat.y + 'px';
       });
@@ -496,10 +475,7 @@
     }
     moveCats();
 
-    // Spawn dot
-    document.getElementById('spawn-dot').addEventListener('click', () => {
-      createCat();
-    });
+    document.getElementById('spawn-dot').addEventListener('click', createCat);
 
     window.addEventListener('resize', () => {
       cats.forEach(cat => {
