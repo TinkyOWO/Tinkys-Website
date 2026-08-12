@@ -5,21 +5,28 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Tinky - Indie Game Developer</title>
   <style>
+    :root {
+      --accent: #ff4d6d;
+      --accent-light: #ff6b8a;
+      --accent-dark: #ff2a5f;
+    }
+
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
     }
 
-body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background: linear-gradient(to bottom, #0d0d0d, #000000);
-  color: #f0f0f0;
-  line-height: 1.6;
-  min-height: 100vh;
-  padding: 2rem 1.5rem;
-  overflow-x: hidden;
-}
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(to bottom, #0d0d0d, #000000);
+      color: #f0f0f0;
+      line-height: 1.6;
+      min-height: 100vh;
+      padding: 2rem 1.5rem;
+      overflow-x: hidden;
+      transition: background 0.8s ease;
+    }
 
     .container {
       max-width: 900px;
@@ -38,10 +45,11 @@ body {
       font-size: 3.2rem;
       font-weight: 700;
       margin-bottom: 0.5rem;
-      background: linear-gradient(90deg, #ff6b8a, #ff3d6e);
+      background: linear-gradient(90deg, var(--accent-light), var(--accent));
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
+      transition: all 0.6s ease;
     }
 
     .tagline {
@@ -59,26 +67,27 @@ body {
 
     .steam-link {
       display: inline-block;
-      background: linear-gradient(90deg, #ff4d6d, #ff2a5f);
+      background: linear-gradient(90deg, var(--accent), var(--accent-dark));
       color: white;
       text-decoration: none;
       padding: 0.7rem 1.6rem;
       border-radius: 50px;
       font-weight: 600;
       font-size: 0.95rem;
-      transition: transform 0.2s, box-shadow 0.2s;
+      transition: all 0.3s ease;
     }
 
     .steam-link:hover {
       transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(255, 61, 110, 0.35);
+      box-shadow: 0 6px 20px color-mix(in srgb, var(--accent) 40%, transparent);
     }
 
     h2 {
       font-size: 1.5rem;
       margin-bottom: 1.8rem;
-      color: #ff6b8a;
+      color: var(--accent-light);
       text-align: center;
+      transition: color 0.6s ease;
     }
 
     .games {
@@ -117,20 +126,20 @@ body {
     }
 
     .socials a {
-      color: #ff6b8a;
+      color: var(--accent-light);
       text-decoration: none;
       font-weight: 500;
       font-size: 0.95rem;
       padding: 0.5rem 1.1rem;
-      border: 1px solid #ff4d6d55;
+      border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
       border-radius: 30px;
-      transition: all 0.2s;
+      transition: all 0.3s ease;
     }
 
     .socials a:hover {
-      background: #ff4d6d22;
-      border-color: #ff4d6d;
-      color: #ff8fa3;
+      background: color-mix(in srgb, var(--accent) 15%, transparent);
+      border-color: var(--accent);
+      color: var(--accent-light);
     }
 
     footer {
@@ -142,8 +151,9 @@ body {
     }
 
     footer a {
-      color: #ff6b8a;
+      color: var(--accent-light);
       text-decoration: none;
+      transition: color 0.3s ease;
     }
 
     /* Floating cat */
@@ -170,20 +180,119 @@ body {
       100% { transform: scale(1) rotate(0); }
     }
 
+    /* Prize Wheel */
+    #wheel-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.88);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 10000;
+      flex-direction: column;
+    }
+
+    #wheel-container {
+      position: relative;
+      width: 340px;
+      height: 340px;
+    }
+
+    #wheel {
+      width: 340px;
+      height: 340px;
+      border-radius: 50%;
+      border: 8px solid #fff;
+      position: relative;
+      overflow: hidden;
+      transition: transform 4.5s cubic-bezier(0.15, 0.8, 0.3, 1);
+      box-shadow: 0 0 50px rgba(255, 255, 255, 0.15);
+    }
+
+    .segment {
+      position: absolute;
+      width: 50%;
+      height: 50%;
+      transform-origin: 100% 100%;
+      left: 0;
+      top: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 700;
+      color: white;
+      text-shadow: 0 1px 4px rgba(0,0,0,0.6);
+    }
+
+    #wheel-pointer {
+      position: absolute;
+      top: -20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left: 15px solid transparent;
+      border-right: 15px solid transparent;
+      border-top: 30px solid white;
+      z-index: 10;
+      filter: drop-shadow(0 3px 5px rgba(0,0,0,0.5));
+    }
+
+    #prize-text {
+      margin-top: 28px;
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: white;
+      text-align: center;
+      min-height: 40px;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+    }
+
+    #close-wheel {
+      margin-top: 22px;
+      background: white;
+      color: #111;
+      border: none;
+      padding: 11px 28px;
+      border-radius: 30px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: none;
+      transition: transform 0.2s;
+    }
+
+    #close-wheel:hover {
+      transform: scale(1.05);
+    }
+
     @media (max-width: 700px) {
-      h1 {
-        font-size: 2.5rem;
-      }
-      #floating-cat {
-        width: 70px;
+      h1 { font-size: 2.5rem; }
+      #floating-cat { width: 70px; }
+      #wheel-container, #wheel {
+        width: 280px;
+        height: 280px;
       }
     }
   </style>
 </head>
 <body>
 
-  <!-- Floating cat (upload TinkyAdmire.png to your repo) -->
   <img id="floating-cat" src="TinkyAdmire.png" alt="Tinky" draggable="false">
+
+  <!-- Prize Wheel -->
+  <div id="wheel-overlay">
+    <div id="wheel-container">
+      <div id="wheel-pointer"></div>
+      <div id="wheel"></div>
+    </div>
+    <div id="prize-text"></div>
+    <button id="close-wheel">Close</button>
+  </div>
 
   <div class="container">
     <header>
@@ -230,79 +339,137 @@ body {
   </div>
 
   <script>
-    // Age check for NSFW
     function checkAge(e) {
       e.preventDefault();
       const isAdult = confirm("This link leads to my NSFW Twitter.\n\nAre you 18 years or older?");
-      if (isAdult) {
-        window.open("https://x.com/TinkyNSFW", "_blank");
-      }
+      if (isAdult) window.open("https://x.com/TinkyNSFW", "_blank");
     }
 
-// Floating cat logic
-const cat = document.getElementById('floating-cat');
-let x = 100;
-let y = 100;
-let dx = 2.8;
-let dy = 2.2;
-let bouncing = false;
+    // ===== Color Prizes =====
+    const prizes = [
+      { name: "Hot Pink",   color: "#ff4d6d", light: "#ff6b8a", dark: "#ff2a5f" },
+      { name: "Sky Blue",   color: "#3b82f6", light: "#60a5fa", dark: "#2563eb" },
+      { name: "Emerald",    color: "#10b981", light: "#34d399", dark: "#059669" },
+      { name: "Purple Guy",     color: "#a855f7", light: "#c084fc", dark: "#9333ea" },
+      { name: "Oi Orange",     color: "#f97316", light: "#fb923c", dark: "#ea580c" },
+      { name: "Cya Cyan",       color: "#06b6d4", light: "#22d3ee", dark: "#0891b2" },
+      { name: "Rose Roses",       color: "#f43f5e", light: "#fb7185", dark: "#e11d48" },
+      { name: "Slimey Lime",       color: "#84cc16", light: "#a3e635", dark: "#65a30d" }
+    ];
 
-function moveCat() {
-  if (!bouncing) {
-    const maxX = window.innerWidth - cat.offsetWidth;
-    const maxY = window.innerHeight - cat.offsetHeight;
+    const wheel = document.getElementById('wheel');
+    const overlay = document.getElementById('wheel-overlay');
+    const prizeText = document.getElementById('prize-text');
+    const closeBtn = document.getElementById('close-wheel');
 
-    x += dx;
-    y += dy;
+    // Create colored segments
+    prizes.forEach((prize, i) => {
+      const segment = document.createElement('div');
+      segment.className = 'segment';
+      const angle = 360 / prizes.length;
+      const rotate = angle * i;
+      segment.style.transform = `rotate(${rotate}deg) skewY(-${90 - angle}deg)`;
+      segment.style.background = prize.color;
+      segment.innerHTML = `<span style="transform: skewY(${90 - angle}deg) rotate(${angle/2}deg); display:block; padding-left:12px;">${prize.name}</span>`;
+      wheel.appendChild(segment);
+    });
 
-    // Bounce off walls
-    if (x <= 0 || x >= maxX) dx = -dx;
-    if (y <= 0 || y >= maxY) dy = -dy;
+    let isSpinning = false;
 
-    // Keep inside screen
-    x = Math.max(0, Math.min(x, maxX));
-    y = Math.max(0, Math.min(y, maxY));
+    function applyTheme(prize) {
+      document.documentElement.style.setProperty('--accent', prize.color);
+      document.documentElement.style.setProperty('--accent-light', prize.light);
+      document.documentElement.style.setProperty('--accent-dark', prize.dark);
+    }
 
-    cat.style.left = x + 'px';
-    cat.style.top = y + 'px';
-  }
+    function spinWheel() {
+      if (isSpinning) return;
+      isSpinning = true;
 
-  // Always keep the loop running
-  requestAnimationFrame(moveCat);
-}
+      overlay.style.display = 'flex';
+      prizeText.textContent = "Spinning...";
+      closeBtn.style.display = 'none';
 
-// Click → bounce + pause
-cat.addEventListener('click', () => {
-  if (bouncing) return;
+      const extraSpins = 6 + Math.random() * 3;
+      const randomDegree = Math.random() * 360;
+      const totalDegree = extraSpins * 360 + randomDegree;
 
-  bouncing = true;
-  cat.classList.add('bounce');
+      wheel.style.transition = 'none';
+      wheel.style.transform = 'rotate(0deg)';
+      void wheel.offsetWidth; // force reflow
 
-  // Remove bounce animation
-  setTimeout(() => {
-    cat.classList.remove('bounce');
-  }, 500);
+      wheel.style.transition = 'transform 4.5s cubic-bezier(0.15, 0.8, 0.3, 1)';
+      wheel.style.transform = `rotate(${totalDegree}deg)`;
 
-  // Resume moving after 2 seconds
-  setTimeout(() => {
-    bouncing = false;
-  }, 2000);
-});
+      setTimeout(() => {
+        const actual = totalDegree % 360;
+        const segmentAngle = 360 / prizes.length;
+        const index = Math.floor(((360 - actual) % 360) / segmentAngle) % prizes.length;
+        const won = prizes[index];
 
-// Start
-window.addEventListener('load', () => {
-  x = Math.random() * (window.innerWidth - 100);
-  y = Math.random() * (window.innerHeight - 100);
-  moveCat();
-});
+        prizeText.textContent = "Theme unlocked: " + won.name;
+        prizeText.style.color = won.color;
+        closeBtn.style.display = 'inline-block';
 
-// Handle resize
-window.addEventListener('resize', () => {
-  const maxX = window.innerWidth - cat.offsetWidth;
-  const maxY = window.innerHeight - cat.offsetHeight;
-  x = Math.min(x, maxX);
-  y = Math.min(y, maxY);
-});
+        // Change the whole site colors
+        applyTheme(won);
+
+        isSpinning = false;
+      }, 4700);
+    }
+
+    closeBtn.addEventListener('click', () => {
+      overlay.style.display = 'none';
+      bouncing = false;
+    });
+
+    // ===== Floating Cat =====
+    const cat = document.getElementById('floating-cat');
+    let x = 100, y = 100, dx = 2.8, dy = 2.2;
+    let bouncing = false;
+
+    function moveCat() {
+      if (!bouncing) {
+        const maxX = window.innerWidth - cat.offsetWidth;
+        const maxY = window.innerHeight - cat.offsetHeight;
+
+        x += dx;
+        y += dy;
+
+        if (x <= 0 || x >= maxX) dx = -dx;
+        if (y <= 0 || y >= maxY) dy = -dy;
+
+        x = Math.max(0, Math.min(x, maxX));
+        y = Math.max(0, Math.min(y, maxY));
+
+        cat.style.left = x + 'px';
+        cat.style.top = y + 'px';
+      }
+      requestAnimationFrame(moveCat);
+    }
+
+    cat.addEventListener('click', () => {
+      if (bouncing || isSpinning) return;
+
+      bouncing = true;
+      cat.classList.add('bounce');
+
+      setTimeout(() => {
+        cat.classList.remove('bounce');
+        spinWheel();
+      }, 500);
+    });
+
+    window.addEventListener('load', () => {
+      x = Math.random() * (window.innerWidth - 100);
+      y = Math.random() * (window.innerHeight - 100);
+      moveCat();
+    });
+
+    window.addEventListener('resize', () => {
+      x = Math.min(x, window.innerWidth - cat.offsetWidth);
+      y = Math.min(y, window.innerHeight - cat.offsetHeight);
+    });
   </script>
 </body>
 </html>
