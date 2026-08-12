@@ -206,12 +206,11 @@
       width: 340px;
       height: 340px;
       border-radius: 50%;
-      border: 10px solid #000;          /* ← black outline */
+      border: 10px solid #000;
       position: relative;
       overflow: hidden;
       transition: transform 4.5s cubic-bezier(0.15, 0.8, 0.3, 1);
       box-shadow: 0 0 40px rgba(0, 0, 0, 0.6);
-      background: #222; /* fallback */
     }
 
     .wheel-label {
@@ -238,7 +237,7 @@
       height: 0;
       border-left: 16px solid transparent;
       border-right: 16px solid transparent;
-      border-top: 32px solid #000;
+      border-top: 32px solid #ffffff;   /* white arrow */
       z-index: 10;
       filter: drop-shadow(0 3px 4px rgba(0,0,0,0.5));
     }
@@ -366,31 +365,34 @@
     const prizeText = document.getElementById('prize-text');
     const closeBtn = document.getElementById('close-wheel');
 
-    // Build the wheel with conic-gradient + clean labels
-    function buildWheel() {
-      const segmentAngle = 360 / prizes.length;
-      let gradientParts = [];
+    const segmentAngle = 360 / prizes.length;
 
+    // Build the wheel – first segment is centered under the pointer when rotation = 0
+    function buildWheel() {
+      // Center the first segment under the top pointer
+      const startOffset = -segmentAngle / 2;
+
+      let gradientParts = [];
       prizes.forEach((prize, i) => {
-        const start = i * segmentAngle;
-        const end = (i + 1) * segmentAngle;
+        const start = startOffset + i * segmentAngle;
+        const end   = startOffset + (i + 1) * segmentAngle;
         gradientParts.push(`${prize.color} ${start}deg ${end}deg`);
       });
 
-      wheel.style.background = `conic-gradient(from -${segmentAngle/2}deg, ${gradientParts.join(', ')})`;
+      wheel.style.background = `conic-gradient(${gradientParts.join(', ')})`;
 
-      // Clear old labels
+      // Remove old labels
       wheel.querySelectorAll('.wheel-label').forEach(el => el.remove());
 
-      // Add readable labels
+      // Place labels in the middle of each segment
       prizes.forEach((prize, i) => {
         const label = document.createElement('div');
         label.className = 'wheel-label';
         label.textContent = prize.name;
 
-        // Position the label in the middle of its segment
-        const midAngle = i * segmentAngle + segmentAngle / 2;
-        // Rotate so text sits nicely along the radius
+        // Angle of the middle of this segment
+        const midAngle = startOffset + i * segmentAngle + segmentAngle / 2;
+
         label.style.transform = `
           rotate(${midAngle}deg)
           translate(95px)
@@ -410,7 +412,7 @@
       document.documentElement.style.setProperty('--accent-light', prize.light);
       document.documentElement.style.setProperty('--accent-dark', prize.dark);
 
-      // Soft background tint that matches the prize (still dark & elegant)
+      // Soft background tint
       const tint = `color-mix(in srgb, ${prize.color} 18%, #0d0d0d)`;
       document.documentElement.style.setProperty('--bg-tint', tint);
     }
@@ -428,21 +430,23 @@
       const randomDegree = Math.random() * 360;
       const totalDegree = extraSpins * 360 + randomDegree;
 
-      // Reset then spin
+      // Reset
       wheel.style.transition = 'none';
       wheel.style.transform = 'rotate(0deg)';
-      void wheel.offsetWidth; // force reflow
+      void wheel.offsetWidth;
 
+      // Spin
       wheel.style.transition = 'transform 4.5s cubic-bezier(0.15, 0.8, 0.3, 1)';
       wheel.style.transform = `rotate(${totalDegree}deg)`;
 
       setTimeout(() => {
-        const actual = totalDegree % 360;
-        const segmentAngle = 360 / prizes.length;
+        // Final angle of the wheel (0–360)
+        const finalAngle = totalDegree % 360;
 
-        // Because we offset the gradient by -half segment, adjust the index calculation
-        const adjusted = (actual + segmentAngle / 2) % 360;
-        const index = Math.floor(((360 - adjusted) % 360) / segmentAngle) % prizes.length;
+        // Because the wheel rotates clockwise, the segment under the top pointer is:
+        // (360 - finalAngle) adjusted by the half-segment offset we used
+        const normalized = (360 - finalAngle + segmentAngle / 2) % 360;
+        const index = Math.floor(normalized / segmentAngle) % prizes.length;
 
         const won = prizes[index];
         prizeText.textContent = "Theme unlocked: " + won.name;
