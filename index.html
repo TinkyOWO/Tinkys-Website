@@ -57,6 +57,15 @@
       height: auto;
       margin-bottom: 0.8rem;
       filter: drop-shadow(0 4px 12px rgba(0,0,0,0.4));
+      cursor: pointer;
+      transition: transform 0.2s ease;
+      user-select: none;
+    }
+    .header-cat:hover {
+      transform: scale(1.08);
+    }
+    .header-cat:active {
+      transform: scale(0.95);
     }
     h1 {
       font-size: 3.2rem;
@@ -158,6 +167,7 @@
       text-decoration: none;
       transition: color 0.3s ease;
     }
+
     /* Floating cats */
     .floating-cat {
       position: fixed;
@@ -172,6 +182,9 @@
     .floating-cat.bounce {
       animation: bounce 0.5s ease;
     }
+    .floating-cat.crazy {
+      animation: crazySpin 0.4s linear infinite;
+    }
     @keyframes bounce {
       0% { transform: scale(1); }
       30% { transform: scale(1.35) rotate(-8deg); }
@@ -179,6 +192,14 @@
       70% { transform: scale(1.15) rotate(-3deg); }
       100% { transform: scale(1) rotate(0); }
     }
+    @keyframes crazySpin {
+      0% { transform: rotate(0deg) scale(1); }
+      25% { transform: rotate(90deg) scale(1.2); }
+      50% { transform: rotate(180deg) scale(0.9); }
+      75% { transform: rotate(270deg) scale(1.15); }
+      100% { transform: rotate(360deg) scale(1); }
+    }
+
     /* Spawn controls */
     #spawn-controls {
       position: fixed;
@@ -213,6 +234,7 @@
       background: var(--accent);
       transform: scale(1.4);
     }
+
     @media (max-width: 700px) {
       h1 { font-size: 2.5rem; }
       .header-cat { width: 110px; }
@@ -225,9 +247,10 @@
     <div id="cat-counter">1</div>
     <div id="spawn-dot" title="Spawn another cat"></div>
   </div>
+
   <div class="container">
     <header>
-      <img src="TinkyNewStyleTransparent.png" alt="Tinky" class="header-cat">
+      <img src="TinkyNewStyleTransparent.png" alt="Tinky" class="header-cat" id="header-cat">
       <h1>Tinky</h1>
       <p class="tagline">Solo Indie Game Developer</p>
       <p class="intro">
@@ -238,6 +261,7 @@
         View on Steam →
       </a>
     </header>
+
     <section>
       <h2>My Games</h2>
       <div class="games">
@@ -252,6 +276,7 @@
         </div>
       </div>
     </section>
+
     <section class="socials-section">
       <h2>Find and join me here</h2>
       <div class="socials">
@@ -261,28 +286,34 @@
         <a href="#" onclick="checkAge(event)">Twitter (NSFW)</a>
       </div>
     </section>
+
     <footer>
       Made by Tinky.
       <a href="https://store.steampowered.com/developer/tinky" target="_blank">Steam Developer Page</a>
     </footer>
   </div>
+
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+
   <script>
     function checkAge(e) {
       e.preventDefault();
       const isAdult = confirm("This link leads to my NSFW Twitter.\n\nAre you 18 years or older?");
       if (isAdult) window.open("https://x.com/TinkyNSFW", "_blank");
     }
+
     // ===== Color Themes =====
     const prizes = [
-      { name: "Sky Blue", color: "#3b82f6", light: "#60a5fa", dark: "#2563eb" },
-      { name: "Purple Guy", color: "#a855f7", light: "#c084fc", dark: "#9333ea" },
-      { name: "Oi Orange", color: "#f97316", light: "#fb923c", dark: "#ea580c" },
-      { name: "Cya Cyan", color: "#06b6d4", light: "#22d3ee", dark: "#0891b2" },
-      { name: "Rose Roses", color: "#f43f5e", light: "#fb7185", dark: "#e11d48" },
-      { name: "Slimey Lime", color: "#84cc16", light: "#a3e635", dark: "#65a30d" }
+      { name: "Sky Blue",     color: "#3b82f6", light: "#60a5fa", dark: "#2563eb" },
+      { name: "Purple Guy",   color: "#a855f7", light: "#c084fc", dark: "#9333ea" },
+      { name: "Oi Orange",    color: "#f97316", light: "#fb923c", dark: "#ea580c" },
+      { name: "Cya Cyan",     color: "#06b6d4", light: "#22d3ee", dark: "#0891b2" },
+      { name: "Rose Roses",   color: "#f43f5e", light: "#fb7185", dark: "#e11d48" },
+      { name: "Slimey Lime",  color: "#84cc16", light: "#a3e635", dark: "#65a30d" }
     ];
+
     let currentIndex = 0;
+
     function applyTheme(prize) {
       document.documentElement.style.setProperty('--accent', prize.color);
       document.documentElement.style.setProperty('--accent-light', prize.light);
@@ -291,6 +322,7 @@
       document.documentElement.style.setProperty('--bg-tint', tint);
       localStorage.setItem('tinky-theme', JSON.stringify(prize));
     }
+
     function loadSavedTheme() {
       const saved = localStorage.getItem('tinky-theme');
       if (saved) {
@@ -303,6 +335,7 @@
       }
     }
     loadSavedTheme();
+
     function fireConfetti(color) {
       confetti({
         particleCount: 100,
@@ -327,14 +360,17 @@
         });
       }, 150);
     }
+
     function nextColor() {
       currentIndex = (currentIndex + 1) % prizes.length;
       const prize = prizes[currentIndex];
       applyTheme(prize);
       fireConfetti(prize.color);
     }
+
     // ===== Bounce Sound =====
     let audioCtx = null;
+
     function playBounceSound() {
       if (!audioCtx) {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -351,30 +387,40 @@
       oscillator.start(audioCtx.currentTime);
       oscillator.stop(audioCtx.currentTime + 0.15);
     }
+
     // ===== Multiple Cats =====
     const cats = [];
     const counterEl = document.getElementById('cat-counter');
+    let isCrazy = false;
+
     function updateCounter() {
       counterEl.textContent = cats.length;
     }
+
     function createCat() {
       const cat = document.createElement('img');
       cat.src = 'TinkyAdmire.png';
       cat.alt = 'Tinky';
       cat.draggable = false;
       cat.className = 'floating-cat';
+
       const startX = Math.random() * (window.innerWidth - 100);
       const startY = Math.random() * (window.innerHeight - 100);
+
       const catData = {
         el: cat,
         x: startX,
         y: startY,
         dx: (Math.random() * 1.8 + 1.8) * (Math.random() < 0.5 ? 1 : -1),
         dy: (Math.random() * 1.5 + 1.5) * (Math.random() < 0.5 ? 1 : -1),
-        bouncing: false
+        bouncing: false,
+        normalDx: 0,
+        normalDy: 0
       };
+
       cat.style.left = catData.x + 'px';
       cat.style.top = catData.y + 'px';
+
       cat.addEventListener('click', () => {
         if (catData.bouncing) return;
         nextColor();
@@ -385,19 +431,29 @@
           catData.bouncing = false;
         }, 500);
       });
+
       document.body.appendChild(cat);
       cats.push(catData);
       updateCounter();
     }
+
     createCat();
+
     function moveCats() {
       cats.forEach(cat => {
         if (cat.bouncing) return;
+
         const maxX = window.innerWidth - cat.el.offsetWidth;
         const maxY = window.innerHeight - cat.el.offsetHeight;
-        cat.x += cat.dx;
-        cat.y += cat.dy;
+
+        // Speed up a lot when crazy
+        const speedMultiplier = isCrazy ? 3.2 : 1;
+
+        cat.x += cat.dx * speedMultiplier;
+        cat.y += cat.dy * speedMultiplier;
+
         let bounced = false;
+
         if (cat.x <= 0 || cat.x >= maxX) {
           cat.dx = -cat.dx;
           bounced = true;
@@ -406,18 +462,43 @@
           cat.dy = -cat.dy;
           bounced = true;
         }
-        if (bounced) {
+
+        if (bounced && !isCrazy) {
           playBounceSound();
         }
+
         cat.x = Math.max(0, Math.min(cat.x, maxX));
         cat.y = Math.max(0, Math.min(cat.y, maxY));
+
         cat.el.style.left = cat.x + 'px';
         cat.el.style.top = cat.y + 'px';
       });
       requestAnimationFrame(moveCats);
     }
     moveCats();
+
+    // ===== Go Crazy Mode =====
+    document.getElementById('header-cat').addEventListener('click', () => {
+      if (isCrazy) return;
+
+      isCrazy = true;
+
+      // Make all cats spin wildly
+      cats.forEach(cat => {
+        cat.el.classList.add('crazy');
+      });
+
+      // Stop the madness after 3.5 seconds
+      setTimeout(() => {
+        isCrazy = false;
+        cats.forEach(cat => {
+          cat.el.classList.remove('crazy');
+        });
+      }, 3500);
+    });
+
     document.getElementById('spawn-dot').addEventListener('click', createCat);
+
     window.addEventListener('resize', () => {
       cats.forEach(cat => {
         cat.x = Math.min(cat.x, window.innerWidth - cat.el.offsetWidth);
