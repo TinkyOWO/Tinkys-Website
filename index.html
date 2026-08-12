@@ -243,59 +243,60 @@ body {
 const cat = document.getElementById('floating-cat');
 let x = 100;
 let y = 100;
-let dx = 2.8;   // speed X
-let dy = 2.2;   // speed Y
+let dx = 2.8;
+let dy = 2.2;
 let bouncing = false;
 
 function moveCat() {
-  if (bouncing) return;
+  if (!bouncing) {
+    const maxX = window.innerWidth - cat.offsetWidth;
+    const maxY = window.innerHeight - cat.offsetHeight;
 
-  const maxX = window.innerWidth - cat.offsetWidth;
-  const maxY = window.innerHeight - cat.offsetHeight;
+    x += dx;
+    y += dy;
 
-  x += dx;
-  y += dy;
+    // Bounce off walls
+    if (x <= 0 || x >= maxX) dx = -dx;
+    if (y <= 0 || y >= maxY) dy = -dy;
 
-  // Bounce off walls
-  if (x <= 0 || x >= maxX) dx = -dx;
-  if (y <= 0 || y >= maxY) dy = -dy;
+    // Keep inside screen
+    x = Math.max(0, Math.min(x, maxX));
+    y = Math.max(0, Math.min(y, maxY));
 
-  // Keep inside screen
-  x = Math.max(0, Math.min(x, maxX));
-  y = Math.max(0, Math.min(y, maxY));
+    cat.style.left = x + 'px';
+    cat.style.top = y + 'px';
+  }
 
-  cat.style.left = x + 'px';
-  cat.style.top = y + 'px';
-
+  // Always keep the loop running
   requestAnimationFrame(moveCat);
 }
 
-// Click → bounce + pause for a few seconds
+// Click → bounce + pause
 cat.addEventListener('click', () => {
   if (bouncing) return;
 
   bouncing = true;
   cat.classList.add('bounce');
 
-  // Remove bounce animation after 0.5s
+  // Remove bounce animation
   setTimeout(() => {
     cat.classList.remove('bounce');
   }, 500);
 
-  // Wait 2 seconds total before he starts moving again
+  // Resume moving after 2 seconds
   setTimeout(() => {
     bouncing = false;
-  }, 2000); // ← change this number to make the pause longer or shorter (in milliseconds)
+  }, 2000);
 });
 
-// Start moving
+// Start
 window.addEventListener('load', () => {
   x = Math.random() * (window.innerWidth - 100);
   y = Math.random() * (window.innerHeight - 100);
   moveCat();
 });
 
-// Handle window resize
+// Handle resize
 window.addEventListener('resize', () => {
   const maxX = window.innerWidth - cat.offsetWidth;
   const maxY = window.innerHeight - cat.offsetHeight;
