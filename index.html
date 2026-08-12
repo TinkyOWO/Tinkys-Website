@@ -11,13 +11,11 @@
       --accent-dark: #ff2a5f;
       --bg-tint: #0d0d0d;
     }
-
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
     }
-
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       background: linear-gradient(to bottom, var(--bg-tint), #000000);
@@ -28,20 +26,17 @@
       overflow-x: hidden;
       transition: background 0.8s ease;
     }
-
     .container {
       max-width: 900px;
       margin: 0 auto;
       position: relative;
       z-index: 1;
     }
-
     header {
       text-align: center;
       margin-bottom: 3.5rem;
       padding-top: 1.5rem;
     }
-
     h1 {
       font-size: 3.2rem;
       font-weight: 700;
@@ -52,20 +47,17 @@
       background-clip: text;
       transition: all 0.6s ease;
     }
-
     .tagline {
       font-size: 1.25rem;
       color: #b0b0b0;
       margin-bottom: 1.4rem;
     }
-
     .intro {
       max-width: 520px;
       margin: 0 auto 2rem;
       color: #cfcfcf;
       font-size: 1.05rem;
     }
-
     .steam-link {
       display: inline-block;
       background: linear-gradient(90deg, var(--accent), var(--accent-dark));
@@ -77,12 +69,10 @@
       font-size: 0.95rem;
       transition: all 0.3s ease;
     }
-
     .steam-link:hover {
       transform: translateY(-2px);
       box-shadow: 0 6px 20px color-mix(in srgb, var(--accent) 40%, transparent);
     }
-
     h2 {
       font-size: 1.5rem;
       margin-bottom: 1.8rem;
@@ -90,7 +80,6 @@
       text-align: center;
       transition: color 0.6s ease;
     }
-
     .games {
       display: flex;
       flex-direction: column;
@@ -98,7 +87,6 @@
       align-items: center;
       margin-bottom: 4.5rem;
     }
-
     .game-widget {
       width: 100%;
       max-width: 646px;
@@ -106,26 +94,22 @@
       overflow: hidden;
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
     }
-
     .game-widget iframe {
       width: 100%;
       height: 190px;
       border: none;
       display: block;
     }
-
     .socials-section {
       text-align: center;
       margin-bottom: 3rem;
     }
-
     .socials {
       display: flex;
       justify-content: center;
       flex-wrap: wrap;
       gap: 0.9rem;
     }
-
     .socials a {
       color: var(--accent-light);
       text-decoration: none;
@@ -136,13 +120,11 @@
       border-radius: 30px;
       transition: all 0.3s ease;
     }
-
     .socials a:hover {
       background: color-mix(in srgb, var(--accent) 15%, transparent);
       border-color: var(--accent);
       color: var(--accent-light);
     }
-
     footer {
       text-align: center;
       margin-top: 2rem;
@@ -150,13 +132,11 @@
       color: #777;
       font-size: 0.9rem;
     }
-
     footer a {
       color: var(--accent-light);
       text-decoration: none;
       transition: color 0.3s ease;
     }
-
     /* Floating cat */
     #floating-cat {
       position: fixed;
@@ -168,19 +148,16 @@
       transition: transform 0.15s ease;
       filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4));
     }
-
     #floating-cat.bounce {
       animation: bounce 0.5s ease;
     }
-
     @keyframes bounce {
-      0%   { transform: scale(1); }
-      30%  { transform: scale(1.35) rotate(-8deg); }
-      50%  { transform: scale(0.9) rotate(5deg); }
-      70%  { transform: scale(1.15) rotate(-3deg); }
+      0% { transform: scale(1); }
+      30% { transform: scale(1.35) rotate(-8deg); }
+      50% { transform: scale(0.9) rotate(5deg); }
+      70% { transform: scale(1.15) rotate(-3deg); }
       100% { transform: scale(1) rotate(0); }
     }
-
     /* Prize Wheel */
     #wheel-overlay {
       position: fixed;
@@ -195,13 +172,11 @@
       z-index: 10000;
       flex-direction: column;
     }
-
     #wheel-container {
       position: relative;
       width: 340px;
       height: 340px;
     }
-
     #wheel {
       width: 340px;
       height: 340px;
@@ -212,7 +187,6 @@
       transition: transform 4.5s cubic-bezier(0.15, 0.8, 0.3, 1);
       box-shadow: 0 0 40px rgba(0, 0, 0, 0.6);
     }
-
     #wheel-pointer {
       position: absolute;
       top: -22px;
@@ -226,7 +200,6 @@
       z-index: 10;
       filter: drop-shadow(0 3px 4px rgba(0,0,0,0.5));
     }
-
     @media (max-width: 700px) {
       h1 { font-size: 2.5rem; }
       #floating-cat { width: 70px; }
@@ -292,6 +265,9 @@
     </footer>
   </div>
 
+  <!-- Confetti library -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+
   <script>
     function checkAge(e) {
       e.preventDefault();
@@ -311,20 +287,17 @@
 
     const wheel = document.getElementById('wheel');
     const overlay = document.getElementById('wheel-overlay');
-
     const segmentAngle = 360 / prizes.length;
 
     // Build clean colored wheel (no text)
     function buildWheel() {
       const startOffset = -segmentAngle / 2;
-
       let gradientParts = [];
       prizes.forEach((prize, i) => {
         const start = startOffset + i * segmentAngle;
         const end   = startOffset + (i + 1) * segmentAngle;
         gradientParts.push(`${prize.color} ${start}deg ${end}deg`);
       });
-
       wheel.style.background = `conic-gradient(${gradientParts.join(', ')})`;
     }
 
@@ -340,6 +313,52 @@
       // Soft background tint
       const tint = `color-mix(in srgb, ${prize.color} 18%, #0d0d0d)`;
       document.documentElement.style.setProperty('--bg-tint', tint);
+
+      // Save to localStorage
+      localStorage.setItem('tinky-theme', JSON.stringify(prize));
+    }
+
+    // Load saved theme on page load
+    function loadSavedTheme() {
+      const saved = localStorage.getItem('tinky-theme');
+      if (saved) {
+        try {
+          const prize = JSON.parse(saved);
+          applyTheme(prize);
+        } catch (e) {
+          // ignore invalid data
+        }
+      }
+    }
+
+    loadSavedTheme();
+
+    function fireConfetti(color) {
+      // Main burst
+      confetti({
+        particleCount: 120,
+        spread: 80,
+        origin: { y: 0.6 },
+        colors: [color, '#ffffff', '#f0f0f0']
+      });
+
+      // Extra side bursts for more fun
+      setTimeout(() => {
+        confetti({
+          particleCount: 60,
+          angle: 60,
+          spread: 55,
+          origin: { x: 0 },
+          colors: [color, '#ffffff']
+        });
+        confetti({
+          particleCount: 60,
+          angle: 120,
+          spread: 55,
+          origin: { x: 1 },
+          colors: [color, '#ffffff']
+        });
+      }, 200);
     }
 
     function spinWheel() {
@@ -369,8 +388,10 @@
 
         const won = prizes[index];
 
-        // Instantly apply the new theme and close the overlay
+        // Apply theme + save + confetti + close
         applyTheme(won);
+        fireConfetti(won.color);
+
         overlay.style.display = 'none';
         isSpinning = false;
         bouncing = false;
