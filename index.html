@@ -213,21 +213,6 @@
       box-shadow: 0 0 40px rgba(0, 0, 0, 0.6);
     }
 
-    .wheel-label {
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      width: 140px;
-      transform-origin: 0 0;
-      font-size: 13px;
-      font-weight: 700;
-      color: white;
-      text-shadow: 0 1px 3px rgba(0,0,0,0.7);
-      text-align: center;
-      pointer-events: none;
-      white-space: nowrap;
-    }
-
     #wheel-pointer {
       position: absolute;
       top: -22px;
@@ -237,37 +222,9 @@
       height: 0;
       border-left: 16px solid transparent;
       border-right: 16px solid transparent;
-      border-top: 32px solid #ffffff;   /* white arrow */
+      border-top: 32px solid #ffffff;
       z-index: 10;
       filter: drop-shadow(0 3px 4px rgba(0,0,0,0.5));
-    }
-
-    #prize-text {
-      margin-top: 28px;
-      font-size: 1.6rem;
-      font-weight: 700;
-      color: white;
-      text-align: center;
-      min-height: 40px;
-      text-shadow: 0 2px 10px rgba(0,0,0,0.5);
-    }
-
-    #close-wheel {
-      margin-top: 22px;
-      background: white;
-      color: #111;
-      border: none;
-      padding: 11px 28px;
-      border-radius: 30px;
-      font-size: 1rem;
-      font-weight: 600;
-      cursor: pointer;
-      display: none;
-      transition: transform 0.2s;
-    }
-
-    #close-wheel:hover {
-      transform: scale(1.05);
     }
 
     @media (max-width: 700px) {
@@ -276,10 +233,6 @@
       #wheel-container, #wheel {
         width: 280px;
         height: 280px;
-      }
-      .wheel-label {
-        width: 115px;
-        font-size: 12px;
       }
     }
   </style>
@@ -293,8 +246,6 @@
       <div id="wheel-pointer"></div>
       <div id="wheel"></div>
     </div>
-    <div id="prize-text"></div>
-    <button id="close-wheel">Close</button>
   </div>
 
   <div class="container">
@@ -362,14 +313,11 @@
 
     const wheel = document.getElementById('wheel');
     const overlay = document.getElementById('wheel-overlay');
-    const prizeText = document.getElementById('prize-text');
-    const closeBtn = document.getElementById('close-wheel');
 
     const segmentAngle = 360 / prizes.length;
 
-    // Build the wheel – first segment is centered under the pointer when rotation = 0
+    // Build clean colored wheel (no text)
     function buildWheel() {
-      // Center the first segment under the top pointer
       const startOffset = -segmentAngle / 2;
 
       let gradientParts = [];
@@ -380,27 +328,6 @@
       });
 
       wheel.style.background = `conic-gradient(${gradientParts.join(', ')})`;
-
-      // Remove old labels
-      wheel.querySelectorAll('.wheel-label').forEach(el => el.remove());
-
-      // Place labels in the middle of each segment
-      prizes.forEach((prize, i) => {
-        const label = document.createElement('div');
-        label.className = 'wheel-label';
-        label.textContent = prize.name;
-
-        // Angle of the middle of this segment
-        const midAngle = startOffset + i * segmentAngle + segmentAngle / 2;
-
-        label.style.transform = `
-          rotate(${midAngle}deg)
-          translate(95px)
-          rotate(-90deg)
-        `;
-
-        wheel.appendChild(label);
-      });
     }
 
     buildWheel();
@@ -422,9 +349,6 @@
       isSpinning = true;
 
       overlay.style.display = 'flex';
-      prizeText.textContent = "Spinning...";
-      prizeText.style.color = "white";
-      closeBtn.style.display = 'none';
 
       const extraSpins = 6 + Math.random() * 3;
       const randomDegree = Math.random() * 360;
@@ -440,28 +364,20 @@
       wheel.style.transform = `rotate(${totalDegree}deg)`;
 
       setTimeout(() => {
-        // Final angle of the wheel (0–360)
+        // Calculate which segment the arrow landed on
         const finalAngle = totalDegree % 360;
-
-        // Because the wheel rotates clockwise, the segment under the top pointer is:
-        // (360 - finalAngle) adjusted by the half-segment offset we used
         const normalized = (360 - finalAngle + segmentAngle / 2) % 360;
         const index = Math.floor(normalized / segmentAngle) % prizes.length;
 
         const won = prizes[index];
-        prizeText.textContent = "Theme unlocked: " + won.name;
-        prizeText.style.color = won.color;
-        closeBtn.style.display = 'inline-block';
 
+        // Instantly apply the new theme and close the overlay
         applyTheme(won);
+        overlay.style.display = 'none';
         isSpinning = false;
+        bouncing = false;
       }, 4700);
     }
-
-    closeBtn.addEventListener('click', () => {
-      overlay.style.display = 'none';
-      bouncing = false;
-    });
 
     // ===== Floating Cat =====
     const cat = document.getElementById('floating-cat');
