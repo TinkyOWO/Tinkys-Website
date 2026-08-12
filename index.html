@@ -160,7 +160,7 @@
       100% { transform: scale(1) rotate(0); }
     }
 
-    /* Spawn controls (bottom left) */
+    /* Spawn controls */
     #spawn-controls {
       position: fixed;
       bottom: 18px;
@@ -195,56 +195,9 @@
       transform: scale(1.4);
     }
 
-    /* Prize Wheel */
-    #wheel-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.88);
-      display: none;
-      justify-content: center;
-      align-items: center;
-      z-index: 10000;
-      flex-direction: column;
-    }
-    #wheel-container {
-      position: relative;
-      width: 340px;
-      height: 340px;
-    }
-    #wheel {
-      width: 340px;
-      height: 340px;
-      border-radius: 50%;
-      border: 10px solid #000;
-      position: relative;
-      overflow: hidden;
-      transition: transform 4.5s cubic-bezier(0.15, 0.8, 0.3, 1);
-      box-shadow: 0 0 40px rgba(0, 0, 0, 0.6);
-    }
-    #wheel-pointer {
-      position: absolute;
-      top: -22px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 0;
-      height: 0;
-      border-left: 16px solid transparent;
-      border-right: 16px solid transparent;
-      border-top: 32px solid #ffffff;
-      z-index: 10;
-      filter: drop-shadow(0 3px 4px rgba(0,0,0,0.5));
-    }
-
     @media (max-width: 700px) {
       h1 { font-size: 2.5rem; }
       .floating-cat { width: 70px; }
-      #wheel-container, #wheel {
-        width: 280px;
-        height: 280px;
-      }
     }
   </style>
 </head>
@@ -252,13 +205,6 @@
   <div id="spawn-controls">
     <div id="cat-counter">1</div>
     <div id="spawn-dot" title="Spawn another cat"></div>
-  </div>
-
-  <div id="wheel-overlay">
-    <div id="wheel-container">
-      <div id="wheel-pointer"></div>
-      <div id="wheel"></div>
-    </div>
   </div>
 
   <div class="container">
@@ -314,7 +260,7 @@
       if (isAdult) window.open("https://x.com/TinkyNSFW", "_blank");
     }
 
-    // ===== Color Prizes =====
+    // ===== Color Themes =====
     const prizes = [
       { name: "Sky Blue",     color: "#3b82f6", light: "#60a5fa", dark: "#2563eb" },
       { name: "Purple Guy",   color: "#a855f7", light: "#c084fc", dark: "#9333ea" },
@@ -324,24 +270,7 @@
       { name: "Slimey Lime",  color: "#84cc16", light: "#a3e635", dark: "#65a30d" }
     ];
 
-    const wheel = document.getElementById('wheel');
-    const overlay = document.getElementById('wheel-overlay');
-    const segmentAngle = 360 / prizes.length; // 60° exactly
-
-    // Perfect equal segments – first segment is centered under the pointer at 0°
-    function buildWheel() {
-      let parts = [];
-      prizes.forEach((prize, i) => {
-        const start = i * segmentAngle;
-        const end = (i + 1) * segmentAngle;
-        parts.push(`${prize.color} ${start}deg ${end}deg`);
-      });
-      // Rotate the whole gradient so the middle of the first segment sits under the top pointer
-      wheel.style.background = `conic-gradient(from -${segmentAngle / 2}deg, ${parts.join(', ')})`;
-    }
-    buildWheel();
-
-    let isSpinning = false;
+    let currentIndex = 0;
 
     function applyTheme(prize) {
       document.documentElement.style.setProperty('--accent', prize.color);
@@ -352,64 +281,54 @@
       localStorage.setItem('tinky-theme', JSON.stringify(prize));
     }
 
+    // Load saved theme
     function loadSavedTheme() {
       const saved = localStorage.getItem('tinky-theme');
       if (saved) {
-        try { applyTheme(JSON.parse(saved)); } catch (e) {}
+        try {
+          const prize = JSON.parse(saved);
+          applyTheme(prize);
+          // Find the index so cycling continues from the saved one
+          const idx = prizes.findIndex(p => p.color === prize.color);
+          if (idx !== -1) currentIndex = idx;
+        } catch (e) {}
       }
     }
     loadSavedTheme();
 
     function fireConfetti(color) {
       confetti({
-        particleCount: 120,
-        spread: 80,
+        particleCount: 100,
+        spread: 70,
         origin: { y: 0.6 },
         colors: [color, '#ffffff', '#f0f0f0']
       });
       setTimeout(() => {
-        confetti({ particleCount: 60, angle: 60, spread: 55, origin: { x: 0 }, colors: [color, '#ffffff'] });
-        confetti({ particleCount: 60, angle: 120, spread: 55, origin: { x: 1 }, colors: [color, '#ffffff'] });
-      }, 200);
+        confetti({
+          particleCount: 50,
+          angle: 60,
+          spread: 50,
+          origin: { x: 0 },
+          colors: [color, '#ffffff']
+        });
+        confetti({
+          particleCount: 50,
+          angle: 120,
+          spread: 50,
+          origin: { x: 1 },
+          colors: [color, '#ffffff']
+        });
+      }, 150);
     }
 
-    function spinWheel() {
-      if (isSpinning) return;
-      isSpinning = true;
-      overlay.style.display = 'flex';
-
-      const extraSpins = 6 + Math.random() * 3;
-      const randomDegree = Math.random() * 360;
-      const totalDegree = extraSpins * 360 + randomDegree;
-
-      // Reset
-      wheel.style.transition = 'none';
-      wheel.style.transform = 'rotate(0deg)';
-      void wheel.offsetWidth;
-
-      // Spin
-      wheel.style.transition = 'transform 4.5s cubic-bezier(0.15, 0.8, 0.3, 1)';
-      wheel.style.transform = `rotate(${totalDegree}deg)`;
-
-      setTimeout(() => {
-        // Correct landing calculation
-        // The wheel rotates clockwise. The angle now under the pointer is:
-        let deg = totalDegree % 360;
-        // Because we offset the gradient by -half segment, we add it back
-        deg = (deg + segmentAngle / 2) % 360;
-        // Convert to index (pointer is at top)
-        const index = Math.floor((360 - deg) / segmentAngle) % prizes.length;
-
-        const won = prizes[index];
-        applyTheme(won);
-        fireConfetti(won.color);
-
-        overlay.style.display = 'none';
-        isSpinning = false;
-      }, 4700);
+    function nextColor() {
+      currentIndex = (currentIndex + 1) % prizes.length;
+      const prize = prizes[currentIndex];
+      applyTheme(prize);
+      fireConfetti(prize.color);
     }
 
-    // ===== Multiple Cats System =====
+    // ===== Multiple Cats =====
     const cats = [];
     const counterEl = document.getElementById('cat-counter');
 
@@ -440,13 +359,13 @@
       cat.style.top = catData.y + 'px';
 
       cat.addEventListener('click', () => {
-        if (catData.bouncing || isSpinning) return;
+        if (catData.bouncing) return;
         catData.bouncing = true;
         cat.classList.add('bounce');
         setTimeout(() => {
           cat.classList.remove('bounce');
           catData.bouncing = false;
-          spinWheel();
+          nextColor();
         }, 500);
       });
 
