@@ -368,26 +368,6 @@
       fireConfetti(prize.color);
     }
 
-    // ===== Bounce Sound =====
-    let audioCtx = null;
-
-    function playBounceSound() {
-      if (!audioCtx) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      }
-      const oscillator = audioCtx.createOscillator();
-      const gainNode = audioCtx.createGain();
-      oscillator.connect(gainNode);
-      gainNode.connect(audioCtx.destination);
-      oscillator.type = 'sine';
-      oscillator.frequency.setValueAtTime(280, audioCtx.currentTime);
-      oscillator.frequency.exponentialRampToValueAtTime(140, audioCtx.currentTime + 0.12);
-      gainNode.gain.setValueAtTime(0.18, audioCtx.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.15);
-      oscillator.start(audioCtx.currentTime);
-      oscillator.stop(audioCtx.currentTime + 0.15);
-    }
-
     // ===== Multiple Cats =====
     const cats = [];
     const counterEl = document.getElementById('cat-counter');
@@ -413,9 +393,7 @@
         y: startY,
         dx: (Math.random() * 1.8 + 1.8) * (Math.random() < 0.5 ? 1 : -1),
         dy: (Math.random() * 1.5 + 1.5) * (Math.random() < 0.5 ? 1 : -1),
-        bouncing: false,
-        normalDx: 0,
-        normalDy: 0
+        bouncing: false
       };
 
       cat.style.left = catData.x + 'px';
@@ -446,26 +424,13 @@
         const maxX = window.innerWidth - cat.el.offsetWidth;
         const maxY = window.innerHeight - cat.el.offsetHeight;
 
-        // Speed up a lot when crazy
         const speedMultiplier = isCrazy ? 3.2 : 1;
 
         cat.x += cat.dx * speedMultiplier;
         cat.y += cat.dy * speedMultiplier;
 
-        let bounced = false;
-
-        if (cat.x <= 0 || cat.x >= maxX) {
-          cat.dx = -cat.dx;
-          bounced = true;
-        }
-        if (cat.y <= 0 || cat.y >= maxY) {
-          cat.dy = -cat.dy;
-          bounced = true;
-        }
-
-        if (bounced) {
-          playBounceSound();
-        }
+        if (cat.x <= 0 || cat.x >= maxX) cat.dx = -cat.dx;
+        if (cat.y <= 0 || cat.y >= maxY) cat.dy = -cat.dy;
 
         cat.x = Math.max(0, Math.min(cat.x, maxX));
         cat.y = Math.max(0, Math.min(cat.y, maxY));
@@ -477,16 +442,44 @@
     }
     moveCats();
 
-    // ===== Go Crazy Mode =====
+    // ===== Go Crazy Mode + Confetti Rain =====
     document.getElementById('header-cat').addEventListener('click', () => {
       if (isCrazy) return;
 
       isCrazy = true;
 
+      // Current selected color
+      const currentColor = prizes[currentIndex].color;
+
       // Make all cats spin wildly
       cats.forEach(cat => {
         cat.el.classList.add('crazy');
       });
+
+      // Rain confetti in the current color
+      const duration = 3500;
+      const end = Date.now() + duration;
+
+      (function frame() {
+        confetti({
+          particleCount: 4,
+          angle: 60,
+          spread: 55,
+          origin: { x: 0 },
+          colors: [currentColor, '#ffffff']
+        });
+        confetti({
+          particleCount: 4,
+          angle: 120,
+          spread: 55,
+          origin: { x: 1 },
+          colors: [currentColor, '#ffffff']
+        });
+
+        if (Date.now() < end) {
+          requestAnimationFrame(frame);
+        }
+      })();
 
       // Stop the madness after 3.5 seconds
       setTimeout(() => {
