@@ -37,6 +37,12 @@
       margin-bottom: 3.5rem;
       padding-top: 1.5rem;
     }
+    .header-cat {
+      width: 140px;
+      height: auto;
+      margin-bottom: 0.8rem;
+      filter: drop-shadow(0 4px 12px rgba(0,0,0,0.4));
+    }
     h1 {
       font-size: 3.2rem;
       font-weight: 700;
@@ -197,6 +203,7 @@
 
     @media (max-width: 700px) {
       h1 { font-size: 2.5rem; }
+      .header-cat { width: 110px; }
       .floating-cat { width: 70px; }
     }
   </style>
@@ -209,6 +216,7 @@
 
   <div class="container">
     <header>
+      <img src="TinkyNewStyleTransparent.png" alt="Tinky" class="header-cat">
       <h1>Tinky</h1>
       <p class="tagline">Solo Indie Game Developer</p>
       <p class="intro">
@@ -384,10 +392,8 @@
       cat.addEventListener('click', () => {
         if (catData.bouncing) return;
 
-        // Change color instantly
         nextColor();
 
-        // Still play the bounce animation
         catData.bouncing = true;
         cat.classList.add('bounce');
         setTimeout(() => {
