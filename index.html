@@ -9,6 +9,7 @@
       --accent: #ff4d6d;
       --accent-light: #ff6b8a;
       --accent-dark: #ff2a5f;
+      --bg-tint: #0d0d0d;
     }
 
     * {
@@ -19,7 +20,7 @@
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: linear-gradient(to bottom, #0d0d0d, #000000);
+      background: linear-gradient(to bottom, var(--bg-tint), #000000);
       color: #f0f0f0;
       line-height: 1.6;
       min-height: 100vh;
@@ -205,41 +206,41 @@
       width: 340px;
       height: 340px;
       border-radius: 50%;
-      border: 8px solid #fff;
+      border: 10px solid #000;          /* ← black outline */
       position: relative;
       overflow: hidden;
       transition: transform 4.5s cubic-bezier(0.15, 0.8, 0.3, 1);
-      box-shadow: 0 0 50px rgba(255, 255, 255, 0.15);
+      box-shadow: 0 0 40px rgba(0, 0, 0, 0.6);
+      background: #222; /* fallback */
     }
 
-    .segment {
+    .wheel-label {
       position: absolute;
-      width: 50%;
-      height: 50%;
-      transform-origin: 100% 100%;
-      left: 0;
-      top: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 14px;
+      left: 50%;
+      top: 50%;
+      width: 140px;
+      transform-origin: 0 0;
+      font-size: 13px;
       font-weight: 700;
       color: white;
-      text-shadow: 0 1px 4px rgba(0,0,0,0.6);
+      text-shadow: 0 1px 3px rgba(0,0,0,0.7);
+      text-align: center;
+      pointer-events: none;
+      white-space: nowrap;
     }
 
     #wheel-pointer {
       position: absolute;
-      top: -20px;
+      top: -22px;
       left: 50%;
       transform: translateX(-50%);
       width: 0;
       height: 0;
-      border-left: 15px solid transparent;
-      border-right: 15px solid transparent;
-      border-top: 30px solid white;
+      border-left: 16px solid transparent;
+      border-right: 16px solid transparent;
+      border-top: 32px solid #000;
       z-index: 10;
-      filter: drop-shadow(0 3px 5px rgba(0,0,0,0.5));
+      filter: drop-shadow(0 3px 4px rgba(0,0,0,0.5));
     }
 
     #prize-text {
@@ -277,11 +278,14 @@
         width: 280px;
         height: 280px;
       }
+      .wheel-label {
+        width: 115px;
+        font-size: 12px;
+      }
     }
   </style>
 </head>
 <body>
-
   <img id="floating-cat" src="TinkyAdmire.png" alt="Tinky" draggable="false">
 
   <!-- Prize Wheel -->
@@ -347,14 +351,14 @@
 
     // ===== Color Prizes =====
     const prizes = [
-      { name: "Hot Pink",   color: "#ff4d6d", light: "#ff6b8a", dark: "#ff2a5f" },
-      { name: "Sky Blue",   color: "#3b82f6", light: "#60a5fa", dark: "#2563eb" },
-      { name: "Emerald",    color: "#10b981", light: "#34d399", dark: "#059669" },
-      { name: "Purple Guy",     color: "#a855f7", light: "#c084fc", dark: "#9333ea" },
-      { name: "Oi Orange",     color: "#f97316", light: "#fb923c", dark: "#ea580c" },
-      { name: "Cya Cyan",       color: "#06b6d4", light: "#22d3ee", dark: "#0891b2" },
-      { name: "Rose Roses",       color: "#f43f5e", light: "#fb7185", dark: "#e11d48" },
-      { name: "Slimey Lime",       color: "#84cc16", light: "#a3e635", dark: "#65a30d" }
+      { name: "Hot Pink",     color: "#ff4d6d", light: "#ff6b8a", dark: "#ff2a5f" },
+      { name: "Sky Blue",     color: "#3b82f6", light: "#60a5fa", dark: "#2563eb" },
+      { name: "Emerald",      color: "#10b981", light: "#34d399", dark: "#059669" },
+      { name: "Purple Guy",   color: "#a855f7", light: "#c084fc", dark: "#9333ea" },
+      { name: "Oi Orange",    color: "#f97316", light: "#fb923c", dark: "#ea580c" },
+      { name: "Cya Cyan",     color: "#06b6d4", light: "#22d3ee", dark: "#0891b2" },
+      { name: "Rose Roses",   color: "#f43f5e", light: "#fb7185", dark: "#e11d48" },
+      { name: "Slimey Lime",  color: "#84cc16", light: "#a3e635", dark: "#65a30d" }
     ];
 
     const wheel = document.getElementById('wheel');
@@ -362,17 +366,42 @@
     const prizeText = document.getElementById('prize-text');
     const closeBtn = document.getElementById('close-wheel');
 
-    // Create colored segments
-    prizes.forEach((prize, i) => {
-      const segment = document.createElement('div');
-      segment.className = 'segment';
-      const angle = 360 / prizes.length;
-      const rotate = angle * i;
-      segment.style.transform = `rotate(${rotate}deg) skewY(-${90 - angle}deg)`;
-      segment.style.background = prize.color;
-      segment.innerHTML = `<span style="transform: skewY(${90 - angle}deg) rotate(${angle/2}deg); display:block; padding-left:12px;">${prize.name}</span>`;
-      wheel.appendChild(segment);
-    });
+    // Build the wheel with conic-gradient + clean labels
+    function buildWheel() {
+      const segmentAngle = 360 / prizes.length;
+      let gradientParts = [];
+
+      prizes.forEach((prize, i) => {
+        const start = i * segmentAngle;
+        const end = (i + 1) * segmentAngle;
+        gradientParts.push(`${prize.color} ${start}deg ${end}deg`);
+      });
+
+      wheel.style.background = `conic-gradient(from -${segmentAngle/2}deg, ${gradientParts.join(', ')})`;
+
+      // Clear old labels
+      wheel.querySelectorAll('.wheel-label').forEach(el => el.remove());
+
+      // Add readable labels
+      prizes.forEach((prize, i) => {
+        const label = document.createElement('div');
+        label.className = 'wheel-label';
+        label.textContent = prize.name;
+
+        // Position the label in the middle of its segment
+        const midAngle = i * segmentAngle + segmentAngle / 2;
+        // Rotate so text sits nicely along the radius
+        label.style.transform = `
+          rotate(${midAngle}deg)
+          translate(95px)
+          rotate(-90deg)
+        `;
+
+        wheel.appendChild(label);
+      });
+    }
+
+    buildWheel();
 
     let isSpinning = false;
 
@@ -380,6 +409,10 @@
       document.documentElement.style.setProperty('--accent', prize.color);
       document.documentElement.style.setProperty('--accent-light', prize.light);
       document.documentElement.style.setProperty('--accent-dark', prize.dark);
+
+      // Soft background tint that matches the prize (still dark & elegant)
+      const tint = `color-mix(in srgb, ${prize.color} 18%, #0d0d0d)`;
+      document.documentElement.style.setProperty('--bg-tint', tint);
     }
 
     function spinWheel() {
@@ -388,12 +421,14 @@
 
       overlay.style.display = 'flex';
       prizeText.textContent = "Spinning...";
+      prizeText.style.color = "white";
       closeBtn.style.display = 'none';
 
       const extraSpins = 6 + Math.random() * 3;
       const randomDegree = Math.random() * 360;
       const totalDegree = extraSpins * 360 + randomDegree;
 
+      // Reset then spin
       wheel.style.transition = 'none';
       wheel.style.transform = 'rotate(0deg)';
       void wheel.offsetWidth; // force reflow
@@ -404,16 +439,17 @@
       setTimeout(() => {
         const actual = totalDegree % 360;
         const segmentAngle = 360 / prizes.length;
-        const index = Math.floor(((360 - actual) % 360) / segmentAngle) % prizes.length;
-        const won = prizes[index];
 
+        // Because we offset the gradient by -half segment, adjust the index calculation
+        const adjusted = (actual + segmentAngle / 2) % 360;
+        const index = Math.floor(((360 - adjusted) % 360) / segmentAngle) % prizes.length;
+
+        const won = prizes[index];
         prizeText.textContent = "Theme unlocked: " + won.name;
         prizeText.style.color = won.color;
         closeBtn.style.display = 'inline-block';
 
-        // Change the whole site colors
         applyTheme(won);
-
         isSpinning = false;
       }, 4700);
     }
@@ -432,16 +468,12 @@
       if (!bouncing) {
         const maxX = window.innerWidth - cat.offsetWidth;
         const maxY = window.innerHeight - cat.offsetHeight;
-
         x += dx;
         y += dy;
-
         if (x <= 0 || x >= maxX) dx = -dx;
         if (y <= 0 || y >= maxY) dy = -dy;
-
         x = Math.max(0, Math.min(x, maxX));
         y = Math.max(0, Math.min(y, maxY));
-
         cat.style.left = x + 'px';
         cat.style.top = y + 'px';
       }
@@ -450,10 +482,8 @@
 
     cat.addEventListener('click', () => {
       if (bouncing || isSpinning) return;
-
       bouncing = true;
       cat.classList.add('bounce');
-
       setTimeout(() => {
         cat.classList.remove('bounce');
         spinWheel();
