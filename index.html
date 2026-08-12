@@ -18,11 +18,14 @@
       line-height: 1.6;
       min-height: 100vh;
       padding: 2rem 1.5rem;
+      overflow-x: hidden;
     }
 
     .container {
       max-width: 900px;
       margin: 0 auto;
+      position: relative;
+      z-index: 1;
     }
 
     header {
@@ -78,7 +81,6 @@
       text-align: center;
     }
 
-    /* Games */
     .games {
       display: flex;
       flex-direction: column;
@@ -102,42 +104,6 @@
       display: block;
     }
 
-    /* Art Gallery */
-    .gallery {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 1.2rem;
-      margin-bottom: 4rem;
-    }
-
-    .gallery-item {
-      background: #1c1c1c;
-      border-radius: 14px;
-      overflow: hidden;
-      border: 1px solid #2a2a2a;
-      transition: transform 0.25s, border-color 0.25s;
-    }
-
-    .gallery-item:hover {
-      transform: translateY(-4px);
-      border-color: #ff4d6d;
-    }
-
-    .gallery-item img {
-      width: 100%;
-      height: 220px;
-      object-fit: cover;
-      display: block;
-    }
-
-    .gallery-item .caption {
-      padding: 0.9rem 1rem;
-      font-size: 0.9rem;
-      color: #b8b8b8;
-      text-align: center;
-    }
-
-    /* Socials */
     .socials-section {
       text-align: center;
       margin-bottom: 3rem;
@@ -180,21 +146,46 @@
       text-decoration: none;
     }
 
+    /* Floating cat */
+    #floating-cat {
+      position: fixed;
+      width: 90px;
+      height: auto;
+      z-index: 9999;
+      cursor: pointer;
+      user-select: none;
+      transition: transform 0.15s ease;
+      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4));
+    }
+
+    #floating-cat.bounce {
+      animation: bounce 0.5s ease;
+    }
+
+    @keyframes bounce {
+      0%   { transform: scale(1); }
+      30%  { transform: scale(1.35) rotate(-8deg); }
+      50%  { transform: scale(0.9) rotate(5deg); }
+      70%  { transform: scale(1.15) rotate(-3deg); }
+      100% { transform: scale(1) rotate(0); }
+    }
+
     @media (max-width: 700px) {
       h1 {
         font-size: 2.5rem;
       }
-
-      .gallery {
-        grid-template-columns: 1fr;
+      #floating-cat {
+        width: 70px;
       }
     }
   </style>
 </head>
 <body>
-  <div class="container">
 
-    <!-- Header -->
+  <!-- Floating cat (upload TinkyAdmire.png to your repo) -->
+  <img id="floating-cat" src="TinkyAdmire.png" alt="Tinky" draggable="false">
+
+  <div class="container">
     <header>
       <h1>Tinky</h1>
       <p class="tagline">Solo Indie Game Developer</p>
@@ -207,7 +198,6 @@
       </a>
     </header>
 
-    <!-- Games -->
     <section>
       <h2>My Games</h2>
       <div class="games">
@@ -223,7 +213,6 @@
       </div>
     </section>
 
-    <!-- Social Links -->
     <section class="socials-section">
       <h2>Find and join me here</h2>
       <div class="socials">
@@ -241,6 +230,7 @@
   </div>
 
   <script>
+    // Age check for NSFW
     function checkAge(e) {
       e.preventDefault();
       const isAdult = confirm("This link leads to my NSFW Twitter.\n\nAre you 18 years or older?");
@@ -248,6 +238,65 @@
         window.open("https://x.com/TinkyNSFW", "_blank");
       }
     }
+
+    // Floating cat logic
+    const cat = document.getElementById('floating-cat');
+    let x = 100;
+    let y = 100;
+    let dx = 2.8;   // speed X (higher = faster)
+    let dy = 2.2;   // speed Y
+    let bouncing = false;
+
+    function moveCat() {
+      if (bouncing) return;
+
+      const maxX = window.innerWidth - cat.offsetWidth;
+      const maxY = window.innerHeight - cat.offsetHeight;
+
+      x += dx;
+      y += dy;
+
+      // Bounce off walls
+      if (x <= 0 || x >= maxX) dx = -dx;
+      if (y <= 0 || y >= maxY) dy = -dy;
+
+      // Keep inside screen
+      x = Math.max(0, Math.min(x, maxX));
+      y = Math.max(0, Math.min(y, maxY));
+
+      cat.style.left = x + 'px';
+      cat.style.top = y + 'px';
+
+      requestAnimationFrame(moveCat);
+    }
+
+    // Click → bounce
+    cat.addEventListener('click', () => {
+      if (bouncing) return;
+      bouncing = true;
+      cat.classList.add('bounce');
+
+      setTimeout(() => {
+        cat.classList.remove('bounce');
+        bouncing = false;
+      }, 500);
+    });
+
+    // Start moving
+    window.addEventListener('load', () => {
+      // Start from a random position
+      x = Math.random() * (window.innerWidth - 100);
+      y = Math.random() * (window.innerHeight - 100);
+      moveCat();
+    });
+
+    // Handle window resize
+    window.addEventListener('resize', () => {
+      const maxX = window.innerWidth - cat.offsetWidth;
+      const maxY = window.innerHeight - cat.offsetHeight;
+      x = Math.min(x, maxX);
+      y = Math.min(y, maxY);
+    });
   </script>
 </body>
 </html>
